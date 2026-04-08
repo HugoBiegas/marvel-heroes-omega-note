@@ -1,12 +1,9 @@
 /**
  * Liste complète des 63 héros jouables de Marvel Heroes Omega.
- * Le jeu a été fermé le 27 novembre 2017.
  *
- * Les images doivent être placées dans public/heroes/ au format :
- *   public/heroes/{slug}.png
- * Exemple : public/heroes/iron-man.png
- *
- * Script de téléchargement disponible dans scripts/download-images.md
+ * - slug : utilisé pour les images locales (public/heroes/{slug}.png)
+ * - buildSlug : utilisé pour le lien vers itembase.mhbugle.com/builds/{buildSlug}/
+ *   (uniquement renseigné si différent du slug)
  */
 
 export const HEROES = [
@@ -26,8 +23,8 @@ export const HEROES = [
   { name: "Cyclops", slug: "cyclops", color: "#d4ac0d" },
   { name: "Daredevil", slug: "daredevil", color: "#922b21" },
   { name: "Deadpool", slug: "deadpool", color: "#c0392b" },
-  { name: "Doctor Doom", slug: "doctor-doom", color: "#1e8449" },
-  { name: "Doctor Strange", slug: "doctor-strange", color: "#6c3483" },
+  { name: "Doctor Doom", slug: "doctor-doom", buildSlug: "dr-doom", color: "#1e8449" },
+  { name: "Doctor Strange", slug: "doctor-strange", buildSlug: "dr-strange", color: "#6c3483" },
   { name: "Elektra", slug: "elektra", color: "#c0392b" },
   { name: "Emma Frost", slug: "emma-frost", color: "#d5d8dc" },
   { name: "Gambit", slug: "gambit", color: "#6c3483" },
@@ -70,24 +67,23 @@ export const HEROES = [
   { name: "Venom", slug: "venom", color: "#1a1a2e" },
   { name: "Vision", slug: "vision", color: "#27ae60" },
   { name: "War Machine", slug: "war-machine", color: "#566573" },
-  { name: "Winter Soldier", slug: "winter-soldier", color: "#566573" },
+  { name: "Winter Soldier", slug: "winter-soldier", buildSlug: "winter_soldier", color: "#566573" },
   { name: "Wolverine", slug: "wolverine", color: "#d4ac0d" },
   { name: "X-23", slug: "x-23", color: "#2c3e50" },
 ];
 
 export function getInitials(name) {
-  return name
-    .split(/[\s.-]+/)
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  return name.split(/[\s.-]+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+}
+
+export function getHeroImagePath(slug) {
+  return `${import.meta.env.BASE_URL}heroes/${slug}.png`;
 }
 
 /**
- * Retourne le chemin de l'image du héros.
- * Les images doivent être dans public/heroes/{slug}.png
+ * Retourne l'URL du build sur itembase.mhbugle.com
  */
-export function getHeroImagePath(slug) {
-  return `${import.meta.env.BASE_URL}heroes/${slug}.png`;
+export function getBuildUrl(hero) {
+  const s = hero.buildSlug || hero.slug;
+  return `https://itembase.mhbugle.com/builds/${s}/`;
 }
