@@ -22,18 +22,17 @@ export default function HeroModal({
 
   return (
     <div>
-      {/* Banner with image */}
+      {/* Portrait centré avec ratio préservé */}
       <div
         style={{
-          height: 120,
+          height: 180,
           borderRadius: 12,
           marginBottom: 20,
-          background: `linear-gradient(135deg, ${hero.color}cc, ${hero.color}33)`,
+          background: `linear-gradient(135deg, ${hero.color}55, ${hero.color}22)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
-          position: "relative",
         }}
       >
         {!imgError ? (
@@ -42,10 +41,9 @@ export default function HeroModal({
             alt={hero.name}
             onError={() => setImgError(true)}
             style={{
-              height: "100%",
-              width: "100%",
-              objectFit: "cover",
-              objectPosition: "top center",
+              maxHeight: "100%",
+              maxWidth: "100%",
+              objectFit: "contain",
             }}
           />
         ) : (
@@ -66,13 +64,7 @@ export default function HeroModal({
       {/* Rating */}
       <div style={{ marginBottom: 20 }}>
         <label className="label">Note (plaisir de jeu)</label>
-        {activePerson ? (
-          <StarRating rating={rating} onRate={onRate} size={28} />
-        ) : (
-          <p style={{ color: "var(--text-dim)", fontSize: 13, margin: 0 }}>
-            Sélectionnez une personne pour noter.
-          </p>
-        )}
+        <StarRating rating={rating} onRate={onRate} size={28} />
       </div>
 
       {/* Comments */}
@@ -126,31 +118,25 @@ export default function HeroModal({
           ))}
         </div>
 
-        {activePerson ? (
-          <div style={{ display: "flex", gap: 8 }}>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit();
-                }
-              }}
-              placeholder="Votre commentaire..."
-              rows={2}
-              className="input"
-              style={{ resize: "vertical", flex: 1 }}
-            />
-            <button onClick={handleSubmit} className="btn-primary" style={{ alignSelf: "flex-end" }}>
-              OK
-            </button>
-          </div>
-        ) : (
-          <p style={{ color: "var(--text-dim)", fontSize: 13 }}>
-            Sélectionnez une personne pour commenter.
-          </p>
-        )}
+        <div style={{ display: "flex", gap: 8 }}>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit();
+              }
+            }}
+            placeholder="Votre commentaire..."
+            rows={2}
+            className="input"
+            style={{ resize: "vertical", flex: 1 }}
+          />
+          <button onClick={handleSubmit} className="btn-primary" style={{ alignSelf: "flex-end" }}>
+            OK
+          </button>
+        </div>
       </div>
     </div>
   );

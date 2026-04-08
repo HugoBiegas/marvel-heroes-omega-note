@@ -16,13 +16,14 @@ import ConfirmModal from "./components/ConfirmModal";
 
 export default function App() {
   const [started, setStarted] = useState(false);
-  const [persisted, setPersisted] = useState(false);
+  const [persistedState, setPersistedState] = useState(false);
   const [data, setData] = useState({ persons: {} });
   const [activePerson, setActivePerson] = useState(null);
   const [search, setSearch] = useState("");
   const [selectedHero, setSelectedHero] = useState(null);
   const [showHeroModal, setShowHeroModal] = useState(false);
   const [showAddPerson, setShowAddPerson] = useState(false);
+  const [showNoPersonWarning, setShowNoPersonWarning] = useState(false);
   const [newPersonName, setNewPersonName] = useState("");
   const [confirmOverwrite, setConfirmOverwrite] = useState(null);
   const [pendingImport, setPendingImport] = useState(null);
@@ -32,7 +33,7 @@ export default function App() {
     (async () => {
       const already = await isPersisted();
       if (already) {
-        setPersisted(true);
+        setPersistedState(true);
         setStarted(true);
         const loaded = loadData();
         setData(loaded);
@@ -47,9 +48,8 @@ export default function App() {
     saveData(d);
   }, []);
 
-  // Consent terminé
   const handleConsentComplete = (granted) => {
-    setPersisted(granted);
+    setPersistedState(granted);
     setStarted(true);
     const loaded = loadData();
     setData(loaded);
@@ -62,6 +62,22 @@ export default function App() {
     activePerson && data.persons[activePerson]
       ? data.persons[activePerson]
       : { ratings: {}, comments: {} };
+
+  // ---- Clic sur un héros : vérifier qu'une personne est sélectionnée ----
+  const handleHeroClick = (heroName) => {
+    if (!activePerson) {
+      setShowNoPersonWarning(true);
+      return;
+    }
+    setSelectedHero(heroName);
+    setShowHeroModal(true);
+  };
+
+  // ---- Depuis le warning, ouvrir la modale d'ajout de personne ----
+  const handleCreateFromWarning = () => {
+    setShowNoPersonWarning(false);
+    setShowAddPerson(true);
+  };
 
   const addPerson = () => {
     const name = newPersonName.trim();
@@ -168,7 +184,6 @@ export default function App() {
   const persons = Object.keys(data.persons);
   const heroObj = selectedHero ? HEROES.find((h) => h.name === selectedHero) : null;
 
-  // ---- Consent screen (si pas encore persisté) ----
   if (!started) {
     return <ConsentScreen onComplete={handleConsentComplete} />;
   }
@@ -182,7 +197,7 @@ export default function App() {
         onAddPerson={() => setShowAddPerson(true)}
         onImport={handleImport}
         onExport={handleExport}
-        isPersisted={persisted}
+        isPersisted={persistedState}
       />
 
       {/* Banner */}
@@ -213,7 +228,7 @@ export default function App() {
           Notez et commentez les 63 héros jouables • Plaisir de jeu
         </p>
 
-        {activePerson && (
+        {activePerson ? (
           <div
             style={{
               marginTop: 14,
@@ -238,6 +253,10 @@ export default function App() {
               {activePerson}
             </span>
           </div>
+        ) : (
+          <p style={{ color: "#e67e22", fontSize: 13, marginTop: 14 }}>
+            ⚠️ Sélectionnez ou créez une personne pour commencer à noter les héros.
+          </p>
         )}
       </div>
 
@@ -270,15 +289,12 @@ export default function App() {
             hero={hero}
             rating={personData.ratings[hero.name] || 0}
             commentCount={(personData.comments[hero.name] || []).length}
-            onClick={() => {
-              setSelectedHero(hero.name);
-              setShowHeroModal(true);
-            }}
+            onClick={() => handleHeroClick(hero.name)}
           />
         ))}
       </div>
 
-      {/* Hero Modal */}
+      {/* Hero Detail Modal */}
       <Modal
         open={showHeroModal && !!heroObj}
         onClose={() => setShowHeroModal(false)}
@@ -295,6 +311,46 @@ export default function App() {
             onDeleteComment={(idx) => deleteComment(selectedHero, idx)}
           />
         )}
+      </Modal>
+
+      {/* Warning: no person selected */}
+      <Modal
+        open={showNoPersonWarning}
+        onClose={() => setShowNoPersonWarning(false)}
+        title="Aucune personne sélectionnée"
+      >
+        <div style={{ textAlign: "center" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.7, margin: "0 0 8px" }}>
+            Vous devez <strong style={{ color: "var(--text)" }}>créer ou sélectionner une personne</strong> avant
+            de pouvoir noter et commenter un héros.
+          </p>
+          <p style={{ color: "var(--text-dim)", fontSize: 13, margin: "0 0 24px" }}>
+            Chaque personne a ses propres notes et commentaires.
+          </p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            {persons.length > 0 && (
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setActivePerson(e.target.value);
+                    setShowNoPersonWarning(false);
+                  }
+                }}
+                className="input"
+                style={{ width: "auto", minWidth: 160, padding: "10px 12px", cursor: "pointer" }}
+                defaultValue=""
+              >
+                <option value="" disabled>Choisir une personne existante</option>
+                {persons.map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            )}
+            <button onClick={handleCreateFromWarning} className="btn-primary">
+              + Créer une personne
+            </button>
+          </div>
+        </div>
       </Modal>
 
       {/* Add Person */}
