@@ -13,14 +13,10 @@ import HeroModal from "./components/HeroModal";
 import ConfirmModal from "./components/ConfirmModal";
 import CompareModal from "./components/CompareModal";
 
-/** Crée les données par défaut d'une nouvelle personne */
 function createDefaultPerson() {
   const owned = {};
   const prestiges = {};
-  HEROES.forEach((h) => {
-    owned[h.name] = false;
-    prestiges[h.name] = DEFAULT_PRESTIGE;
-  });
+  HEROES.forEach((h) => { owned[h.name] = false; prestiges[h.name] = DEFAULT_PRESTIGE; });
   return { ratings: {}, comments: {}, levels: {}, prestiges, owned };
 }
 
@@ -29,14 +25,10 @@ export default function App() {
   const [persistedState, setPersistedState] = useState(false);
   const [data, setData] = useState({ persons: {} });
   const [activePerson, setActivePerson] = useState(null);
-
-  // Filters
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
   const [filterOwned, setFilterOwned] = useState("all");
-
-  // Modals
   const [selectedHero, setSelectedHero] = useState(null);
   const [showHeroModal, setShowHeroModal] = useState(false);
   const [showAddPerson, setShowAddPerson] = useState(false);
@@ -47,184 +39,124 @@ export default function App() {
   const [confirmOverwrite, setConfirmOverwrite] = useState(null);
   const [pendingImport, setPendingImport] = useState(null);
 
-  // Init
   useEffect(() => {
     (async () => {
       const already = await isPersisted();
       if (already) {
-        setPersistedState(true);
-        setStarted(true);
-        const loaded = loadData();
-        setData(loaded);
+        setPersistedState(true); setStarted(true);
+        const loaded = loadData(); setData(loaded);
         const ps = Object.keys(loaded.persons);
         if (ps.length > 0) setActivePerson(ps[0]);
       }
     })();
   }, []);
 
-  const updateData = useCallback((d) => {
-    setData(d);
-    saveData(d);
-  }, []);
+  const updateData = useCallback((d) => { setData(d); saveData(d); }, []);
 
   const handleConsentComplete = (granted) => {
-    setPersistedState(granted);
-    setStarted(true);
-    const loaded = loadData();
-    setData(loaded);
+    setPersistedState(granted); setStarted(true);
+    const loaded = loadData(); setData(loaded);
     const ps = Object.keys(loaded.persons);
     if (ps.length > 0) setActivePerson(ps[0]);
   };
 
-  // ---- Person data with safe defaults ----
   const personData = useMemo(() => {
     if (activePerson && data.persons[activePerson]) {
       const p = data.persons[activePerson];
       return {
-        ratings: p.ratings || {},
-        comments: p.comments || {},
-        levels: p.levels || {},
-        prestiges: p.prestiges || {},
-        owned: p.owned || {},
+        ratings: p.ratings || {}, comments: p.comments || {},
+        levels: p.levels || {}, prestiges: p.prestiges || {}, owned: p.owned || {},
       };
     }
     return { ratings: {}, comments: {}, levels: {}, prestiges: {}, owned: {} };
   }, [activePerson, data]);
 
-  // ---- Update person field helper ----
   const updatePersonField = useCallback((field, heroName, value) => {
     if (!activePerson) return;
     const current = data.persons[activePerson] || createDefaultPerson();
     updateData({
-      ...data,
-      persons: {
-        ...data.persons,
-        [activePerson]: {
-          ...current,
-          [field]: { ...(current[field] || {}), [heroName]: value },
-        },
+      ...data, persons: { ...data.persons,
+        [activePerson]: { ...current, [field]: { ...(current[field] || {}), [heroName]: value } },
       },
     });
   }, [activePerson, data, updateData]);
 
-  // ---- Hero click ----
   const handleHeroClick = (heroName) => {
     if (!activePerson) { setShowNoPersonWarning(true); return; }
-    setSelectedHero(heroName);
-    setShowHeroModal(true);
+    setSelectedHero(heroName); setShowHeroModal(true);
   };
 
-  // ---- Add person ----
   const addPerson = () => {
     const name = newPersonName.trim();
     if (!name) return;
     if (!data.persons[name]) {
-      updateData({
-        ...data,
-        persons: { ...data.persons, [name]: createDefaultPerson() },
-      });
+      updateData({ ...data, persons: { ...data.persons, [name]: createDefaultPerson() } });
     }
-    setActivePerson(name);
-    setNewPersonName("");
-    setShowAddPerson(false);
+    setActivePerson(name); setNewPersonName(""); setShowAddPerson(false);
   };
 
-  // ---- Delete person ----
   const deletePerson = () => {
     if (!activePerson) return;
-    const newPersons = { ...data.persons };
-    delete newPersons[activePerson];
+    const newPersons = { ...data.persons }; delete newPersons[activePerson];
     updateData({ ...data, persons: newPersons });
     const remaining = Object.keys(newPersons);
     setActivePerson(remaining.length > 0 ? remaining[0] : null);
     setShowDeleteConfirm(false);
   };
 
-  // ---- Comments ----
   const addComment = (heroName, text) => {
     if (!activePerson) return;
     const current = data.persons[activePerson] || createDefaultPerson();
     const existing = current.comments?.[heroName] || [];
-    updateData({
-      ...data,
-      persons: {
-        ...data.persons,
-        [activePerson]: {
-          ...current,
-          comments: { ...(current.comments || {}), [heroName]: [...existing, { text, date: new Date().toISOString() }] },
-        },
-      },
-    });
+    updateData({ ...data, persons: { ...data.persons,
+      [activePerson]: { ...current, comments: { ...(current.comments || {}), [heroName]: [...existing, { text, date: new Date().toISOString() }] } },
+    }});
   };
 
   const deleteComment = (heroName, idx) => {
     const current = data.persons[activePerson] || createDefaultPerson();
-    const existing = [...(current.comments?.[heroName] || [])];
-    existing.splice(idx, 1);
-    updateData({
-      ...data,
-      persons: {
-        ...data.persons,
-        [activePerson]: {
-          ...current,
-          comments: { ...(current.comments || {}), [heroName]: existing },
-        },
-      },
-    });
+    const existing = [...(current.comments?.[heroName] || [])]; existing.splice(idx, 1);
+    updateData({ ...data, persons: { ...data.persons,
+      [activePerson]: { ...current, comments: { ...(current.comments || {}), [heroName]: existing } },
+    }});
   };
 
-  // ---- Import / Export ----
-  const handleExport = () => {
-    if (!activePerson) return;
-    exportPerson(activePerson, data.persons[activePerson]);
-  };
+  const handleExport = () => { if (activePerson) exportPerson(activePerson, data.persons[activePerson]); };
 
   const handleImport = async (file) => {
     try {
       const imported = await readImportFile(file);
-      if (data.persons[imported.name]) {
-        setPendingImport(imported);
-        setConfirmOverwrite(imported.name);
-      } else {
-        updateData({ ...data, persons: { ...data.persons, [imported.name]: imported.data } });
-        setActivePerson(imported.name);
-      }
+      if (data.persons[imported.name]) { setPendingImport(imported); setConfirmOverwrite(imported.name); }
+      else { updateData({ ...data, persons: { ...data.persons, [imported.name]: imported.data } }); setActivePerson(imported.name); }
     } catch (err) { alert(err.message); }
   };
 
   const confirmImportAction = () => {
     if (!pendingImport) return;
     updateData({ ...data, persons: { ...data.persons, [pendingImport.name]: pendingImport.data } });
-    setActivePerson(pendingImport.name);
-    setPendingImport(null);
-    setConfirmOverwrite(null);
+    setActivePerson(pendingImport.name); setPendingImport(null); setConfirmOverwrite(null);
   };
 
-  // ---- Filtering + Sorting ----
   const prestigeIndex = (id) => PRESTIGE_LEVELS.findIndex((p) => p.id === id);
 
   const sortedHeroes = useMemo(() => {
-    let list = HEROES.filter((h) => h.name.toLowerCase().includes(search.toLowerCase()));
-
+    const q = search.toLowerCase();
+    let list = HEROES.filter((h) => h.nameFr.toLowerCase().includes(q) || h.name.toLowerCase().includes(q));
     if (filterOwned === "owned") list = list.filter((h) => personData.owned[h.name] === true);
     else if (filterOwned === "notowned") list = list.filter((h) => !personData.owned[h.name]);
-
     list.sort((a, b) => {
       let va, vb;
       switch (sortBy) {
-        case "rating":
-          va = personData.ratings[a.name] || 0; vb = personData.ratings[b.name] || 0; break;
-        case "level":
-          va = personData.levels[a.name] || 0; vb = personData.levels[b.name] || 0; break;
+        case "rating": va = personData.ratings[a.name] || 0; vb = personData.ratings[b.name] || 0; break;
+        case "level": va = personData.levels[a.name] || 0; vb = personData.levels[b.name] || 0; break;
         case "prestige":
           va = prestigeIndex(personData.prestiges[a.name] || DEFAULT_PRESTIGE);
           vb = prestigeIndex(personData.prestiges[b.name] || DEFAULT_PRESTIGE); break;
         case "comments":
-          va = (personData.comments[a.name] || []).length;
-          vb = (personData.comments[b.name] || []).length; break;
+          va = (personData.comments[a.name] || []).length; vb = (personData.comments[b.name] || []).length; break;
         default:
-          va = a.name.toLowerCase(); vb = b.name.toLowerCase();
-          return sortOrder === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
+          va = a.nameFr.toLowerCase(); vb = b.nameFr.toLowerCase();
+          return sortOrder === "asc" ? va.localeCompare(vb, "fr") : vb.localeCompare(va, "fr");
       }
       return sortOrder === "asc" ? va - vb : vb - va;
     });
@@ -239,15 +171,11 @@ export default function App() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-primary)" }}>
       <Header
-        persons={persons}
-        activePerson={activePerson}
-        onSelectPerson={setActivePerson}
-        onAddPerson={() => setShowAddPerson(true)}
+        persons={persons} activePerson={activePerson}
+        onSelectPerson={setActivePerson} onAddPerson={() => setShowAddPerson(true)}
         onDeletePerson={() => setShowDeleteConfirm(true)}
-        onImport={handleImport}
-        onExport={handleExport}
-        onCompare={() => setShowCompare(true)}
-        isPersisted={persistedState}
+        onImport={handleImport} onExport={handleExport}
+        onCompare={() => setShowCompare(true)} isPersisted={persistedState}
       />
 
       {/* Banner */}
@@ -267,14 +195,10 @@ export default function App() {
         {activePerson ? (
           <div style={{
             marginTop: 12, display: "inline-flex", alignItems: "center", gap: 8,
-            background: "var(--bg-card)", padding: "5px 14px", borderRadius: 20,
-            border: "1px solid var(--border-light)",
+            background: "var(--bg-card)", padding: "5px 14px", borderRadius: 20, border: "1px solid var(--border-light)",
           }}>
             <span style={{ color: "var(--text-muted)", fontSize: 12 }}>Notes de :</span>
-            <span style={{
-              color: "var(--red-light)", fontWeight: 700, fontFamily: "var(--font-display)",
-              textTransform: "uppercase",
-            }}>{activePerson}</span>
+            <span style={{ color: "var(--red-light)", fontWeight: 700, fontFamily: "var(--font-display)", textTransform: "uppercase" }}>{activePerson}</span>
           </div>
         ) : (
           <p style={{ color: "#e67e22", fontSize: 13, marginTop: 12 }}>
@@ -283,7 +207,6 @@ export default function App() {
         )}
       </div>
 
-      {/* Filters */}
       <FilterBar
         search={search} onSearchChange={setSearch}
         sortBy={sortBy} onSortByChange={setSortBy}
@@ -291,14 +214,12 @@ export default function App() {
         filterOwned={filterOwned} onFilterOwnedChange={setFilterOwned}
       />
 
-      {/* Grid */}
       <div style={{
         maxWidth: 1200, margin: "0 auto", padding: "16px 24px 24px",
         display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 14,
       }}>
         {sortedHeroes.map((hero) => (
-          <HeroCard
-            key={hero.slug} hero={hero}
+          <HeroCard key={hero.slug} hero={hero}
             rating={personData.ratings[hero.name] || 0}
             commentCount={(personData.comments[hero.name] || []).length}
             level={personData.levels[hero.name] || 0}
@@ -308,17 +229,14 @@ export default function App() {
           />
         ))}
         {sortedHeroes.length === 0 && (
-          <p style={{ gridColumn: "1/-1", textAlign: "center", color: "var(--text-dim)", padding: 40 }}>
-            Aucun héros trouvé.
-          </p>
+          <p style={{ gridColumn: "1/-1", textAlign: "center", color: "var(--text-dim)", padding: 40 }}>Aucun héros trouvé.</p>
         )}
       </div>
 
       {/* Hero Detail */}
-      <Modal open={showHeroModal && !!heroObj} onClose={() => setShowHeroModal(false)} title={selectedHero || ""}>
+      <Modal open={showHeroModal && !!heroObj} onClose={() => setShowHeroModal(false)} title={heroObj?.nameFr || ""}>
         {heroObj && (
-          <HeroModal
-            hero={heroObj}
+          <HeroModal hero={heroObj}
             rating={personData.ratings[selectedHero] || 0}
             comments={personData.comments[selectedHero] || []}
             level={personData.levels[selectedHero] || 0}
@@ -342,59 +260,40 @@ export default function App() {
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 16 }}>
             {persons.length > 0 && (
-              <select
-                onChange={(e) => { if (e.target.value) { setActivePerson(e.target.value); setShowNoPersonWarning(false); } }}
-                className="input" style={{ width: "auto", minWidth: 160, padding: "10px 12px", cursor: "pointer" }}
-                defaultValue=""
-              >
+              <select onChange={(e) => { if (e.target.value) { setActivePerson(e.target.value); setShowNoPersonWarning(false); } }}
+                className="input" style={{ width: "auto", minWidth: 160, padding: "10px 12px", cursor: "pointer" }} defaultValue="">
                 <option value="" disabled>Personne existante</option>
                 {persons.map((p) => <option key={p} value={p}>{p}</option>)}
               </select>
             )}
-            <button onClick={() => { setShowNoPersonWarning(false); setShowAddPerson(true); }} className="btn-primary">
-              + Créer une personne
-            </button>
+            <button onClick={() => { setShowNoPersonWarning(false); setShowAddPerson(true); }} className="btn-primary">+ Créer une personne</button>
           </div>
         </div>
       </Modal>
 
-      {/* Add Person */}
       <Modal open={showAddPerson} onClose={() => setShowAddPerson(false)} title="Ajouter une personne">
         <div style={{ display: "flex", gap: 8 }}>
-          <input
-            value={newPersonName} onChange={(e) => setNewPersonName(e.target.value)}
+          <input value={newPersonName} onChange={(e) => setNewPersonName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addPerson()}
-            placeholder="Nom de la personne..." className="input" style={{ flex: 1 }} autoFocus
-          />
+            placeholder="Nom de la personne..." className="input" style={{ flex: 1 }} autoFocus />
           <button onClick={addPerson} className="btn-primary">Ajouter</button>
         </div>
       </Modal>
 
-      {/* Delete Person Confirm */}
-      <ConfirmModal
-        open={showDeleteConfirm}
-        message={`Voulez-vous vraiment supprimer "${activePerson}" et toutes ses données (notes, commentaires, niveaux, prestiges) ? Cette action est irréversible.`}
-        onConfirm={deletePerson}
-        onCancel={() => setShowDeleteConfirm(false)}
-      />
+      <ConfirmModal open={showDeleteConfirm}
+        message={`Voulez-vous vraiment supprimer "${activePerson}" et toutes ses données ? Cette action est irréversible.`}
+        onConfirm={deletePerson} onCancel={() => setShowDeleteConfirm(false)} />
 
-      {/* Compare */}
       <CompareModal open={showCompare} onClose={() => setShowCompare(false)} persons={persons} data={data} />
 
-      {/* Import Overwrite Confirm */}
-      <ConfirmModal
-        open={!!confirmOverwrite}
-        message={`La personne "${confirmOverwrite}" existe déjà. Voulez-vous écraser ses données avec celles importées ?`}
-        onConfirm={confirmImportAction}
-        onCancel={() => { setConfirmOverwrite(null); setPendingImport(null); }}
-      />
+      <ConfirmModal open={!!confirmOverwrite}
+        message={`La personne "${confirmOverwrite}" existe déjà. Voulez-vous écraser ses données ?`}
+        onConfirm={confirmImportAction} onCancel={() => { setConfirmOverwrite(null); setPendingImport(null); }} />
 
       <footer style={{
         textAlign: "center", padding: "32px 24px", borderTop: "1px solid var(--bg-card)",
         color: "var(--text-footer)", fontSize: 12,
-      }}>
-        Marvel Heroes Omega — Fan Site — Jeu fermé le 27 novembre 2017
-      </footer>
+      }}>Marvel Heroes Omega — Fan Site — Jeu fermé le 27 novembre 2017</footer>
     </div>
   );
 }

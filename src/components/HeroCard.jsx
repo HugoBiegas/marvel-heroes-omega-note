@@ -13,14 +13,9 @@ export default function HeroCard({ hero, rating, commentCount, level, prestige, 
     <div
       onClick={onClick}
       style={{
-        background: "var(--bg-card)",
-        borderRadius: 14,
-        overflow: "hidden",
-        cursor: "pointer",
-        border: isNotOwned ? "1px solid #333" : "1px solid var(--border)",
-        transition: "all 0.2s",
-        position: "relative",
-        opacity: isNotOwned ? 0.5 : 1,
+        background: "var(--bg-card)", borderRadius: 14, overflow: "hidden",
+        cursor: "pointer", border: isNotOwned ? "1px solid #333" : "1px solid var(--border)",
+        transition: "all 0.2s", position: "relative", opacity: isNotOwned ? 0.5 : 1,
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = hero.color;
@@ -35,19 +30,13 @@ export default function HeroCard({ hero, rating, commentCount, level, prestige, 
         e.currentTarget.style.opacity = isNotOwned ? "0.5" : "1";
       }}
     >
-      {/* Image */}
-      <div
-        style={{
-          height: 150,
-          background: `linear-gradient(135deg, ${hero.color}cc, ${hero.color}44)`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          position: "relative", overflow: "hidden",
-        }}
-      >
+      <div style={{
+        height: 150, background: `linear-gradient(135deg, ${hero.color}cc, ${hero.color}44)`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        position: "relative", overflow: "hidden",
+      }}>
         {!imgError ? (
-          <img
-            src={getHeroImagePath(hero.slug)}
-            alt={hero.name}
+          <img src={getHeroImagePath(hero.slug)} alt={hero.nameFr}
             onError={() => setImgError(true)}
             style={{ height: "100%", width: "100%", objectFit: "cover", objectPosition: "top center" }}
           />
@@ -55,41 +44,27 @@ export default function HeroCard({ hero, rating, commentCount, level, prestige, 
           <span style={{
             fontSize: 48, fontFamily: "var(--font-display)", fontWeight: 700,
             color: "#fff", opacity: 0.9, textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-          }}>
-            {getInitials(hero.name)}
-          </span>
+          }}>{getInitials(hero.nameFr)}</span>
         )}
-
-        {/* Badges top-left */}
         <div style={{ position: "absolute", top: 6, left: 6, display: "flex", gap: 4 }}>
           <span style={{
             background: owned ? "#27ae6099" : "#e74c3c99",
             borderRadius: 6, padding: "2px 6px", fontSize: 10, fontWeight: 700, color: "#fff",
-          }}>
-            {owned ? "✓" : "✗"}
-          </span>
+          }}>{owned ? "✓" : "✗"}</span>
           {prest !== "white" && (
             <span style={{
               background: "rgba(0,0,0,0.6)", borderRadius: 6, padding: "2px 6px",
               fontSize: 10, fontWeight: 700, color: prestigeData.color,
               border: `1px solid ${prestigeData.color}44`,
-            }}>
-              P
-            </span>
+            }}>P</span>
           )}
         </div>
-
-        {/* Comments badge */}
         {commentCount > 0 && (
           <span style={{
             position: "absolute", top: 6, right: 6, background: "var(--red)",
             borderRadius: 10, padding: "2px 7px", fontSize: 11, fontWeight: 700, color: "#fff",
-          }}>
-            💬 {commentCount}
-          </span>
+          }}>💬 {commentCount}</span>
         )}
-
-        {/* Level overlay */}
         {level > 0 && (
           <div style={{
             position: "absolute", bottom: 0, left: 0, right: 0,
@@ -100,23 +75,17 @@ export default function HeroCard({ hero, rating, commentCount, level, prestige, 
               Niv. <strong style={{ color: "#fff", fontSize: 13 }}>{level}</strong>
             </span>
             {prest !== "white" && (
-              <span style={{ fontSize: 10, color: prestigeData.color, fontWeight: 700 }}>
-                {prestigeData.label}
-              </span>
+              <span style={{ fontSize: 10, color: prestigeData.color, fontWeight: 700 }}>{prestigeData.label}</span>
             )}
           </div>
         )}
       </div>
-
-      {/* Info */}
       <div style={{ padding: "10px 12px" }}>
         <div style={{
           fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 13,
           textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4,
           whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-        }}>
-          {hero.name}
-        </div>
+        }}>{hero.nameFr}</div>
         <StarRating rating={rating} size={14} />
       </div>
     </div>
